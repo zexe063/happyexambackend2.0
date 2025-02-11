@@ -32,9 +32,10 @@ subjectId:{
  },
 
     chapter_number:{
-        type:String,
+        type: Number,
         required:true,
      },
+
      chapter_image:{
      type:String,
      default:null

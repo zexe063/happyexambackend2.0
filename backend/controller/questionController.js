@@ -6,13 +6,14 @@ const{levelModel} = require("../schema/levelSchema");
 const {questionModel} = require("../schema/questionSchema");
 
 const getQuestion = async(req,res)=>{
-    const { class_name, subject_name, chapter_number,level_name} =  req.params;
+    try{
+    const { class_name, subject_name, chapter_number,level_number} =  req.params;
 
    
     const getQuestionData = await classModel.aggregate([
         {
             $match:{
-                class_name:class_name
+                class_name:Number(class_name)
             }
         },
 
@@ -40,7 +41,10 @@ const getQuestion = async(req,res)=>{
                 pipeline:[
                     {
                         $match:{
-                            "chapter_name.english":chapter_number
+                            $or:[
+                                {chapter_number:Number(chapter_number)},
+                                {"chapter_name.english" : chapter_number}
+                            ]
                         }
                     }
                 ],
@@ -56,7 +60,7 @@ const getQuestion = async(req,res)=>{
               pipeline:[
                 {
                     $match:{
-                      level_name:level_name
+                      level_number:Number(level_number)
                     }
                 }
               ],
@@ -93,18 +97,26 @@ const getQuestion = async(req,res)=>{
       
        
     ])
+   
     
-    if(!getQuestionData || !getQuestionData) return res.status(401).json("class_name || subject_name || chapter_number || level_name is invalid");
+    if(!getQuestionData || !getQuestionData.length) return res.status(401).json("class_name || subject_name || chapter_number || level_name is invalid");
     res.json(getQuestionData);
 }
+catch(err){
+    console.log(err)
+}
+}
+
+// HERE THE CREATEQUETSION
 
 const createQuestion = async(req,res)=>{
-    const { class_name, subject_name, chapter_number,level_name} =  req.params;
+    try{
+    const { class_name, subject_name, chapter_number,level_number} =  req.params;
    
     const levelId= await classModel.aggregate([
         {
             $match:{
-                class_name:class_name
+                class_name:Number(class_name)
             }
         },
 
@@ -132,7 +144,10 @@ const createQuestion = async(req,res)=>{
                 pipeline:[
                     {
                         $match:{
-                            chapter_number:chapter_number
+                        $or: [
+                            {chapter_number: Number(chapter_number)},
+                            {"chapter_name.english" : chapter_number}
+                        ]
                         }
                     }
                 ],
@@ -148,7 +163,7 @@ const createQuestion = async(req,res)=>{
               pipeline:[
                 {
                     $match:{
-                      level_name:level_name
+                      level_number:Number(level_number)
                     }
                 }
               ],
@@ -177,13 +192,13 @@ const createQuestion = async(req,res)=>{
     if(!levelId || !levelId.length) return res.status(401).json("class_name || subject_name || chapter_number || level_name is invalid");
 
 
-const data = req.body.map((item)=>({...item, ["levelId"]:levelId[0]._id, ["level_name"]:levelId[0].level_name}));
+const data = req.body.map((item)=>({...item, ["levelId"]:levelId[0]._id, ["level_number"]:levelId[0].level_number}));
 
 const newQuetsionData  = await questionModel.insertMany(data);
 res.json(newQuetsionData);
 
 const questionId = newQuetsionData.map((question)=>question._id);
-console.log(questionId)
+
 const updateLevel =await levelModel.findByIdAndUpdate(levelId[0]._id, {
     $push:{
         question:{
@@ -191,7 +206,11 @@ const updateLevel =await levelModel.findByIdAndUpdate(levelId[0]._id, {
         }
     }
 },{new:true});
-console.log(updateLevel);
+
+    
+}catch(err){
+    console.log(err)
+}
 
 
 }

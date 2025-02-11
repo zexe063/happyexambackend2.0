@@ -13,8 +13,13 @@ const  getClass = async(req,res)=>{
 
 
 const  createClass = async(req,res)=>{
- const newClassData = await classModel.insertMany(req.body);
- res.json(newClassData);
+   try{
+     const newClassData = await classModel.insertMany(req.body);
+     res.json(newClassData);
+   }
+   catch(err){
+      res.json(err)
+   }
 
 }
 

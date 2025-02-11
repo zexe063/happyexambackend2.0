@@ -25,7 +25,10 @@ const subjectSchema = new mongoose.Schema({
             required:true
         }
       },
-   
+      subject_image:{
+        type:String,
+        default :null
+      },
     chapter:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:"chapter"

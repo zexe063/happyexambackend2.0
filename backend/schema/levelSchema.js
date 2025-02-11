@@ -17,8 +17,8 @@ const  levelSchema =  new mongoose.Schema({
             type:mongoose.Schema.Types.ObjectId,
             ref:"chapter"
         },
-    level_name:{
-        type:String,
+    level_number:{
+        type:Number,
         required:true,
     },
   

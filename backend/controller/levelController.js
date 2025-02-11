@@ -4,6 +4,7 @@
 const { classModel } = require("../schema/classSchema");
 const {levelModel} = require("../schema/levelSchema");
 const {chapterModel} = require("../schema/chapterSchema");
+const chapterRouter = require("../route/chapterRoute");
 
 
 
@@ -13,14 +14,11 @@ const getLevel = async(req,res)=>{
 
   try{
     const  {class_name, subject_name, chapter_number} =  req.params;
-
-
-    console.log(class_name,subject_name,chapter_number)
     const getLevelData =   await classModel.aggregate([
       
       {
         $match:{
-          class_name:class_name
+          class_name:Number(class_name)
         }
       },
 
@@ -48,7 +46,10 @@ const getLevel = async(req,res)=>{
           pipeline:[
             {
               $match:{
-              "chapter_name.english":chapter_number
+               $or:[
+                {chapter_number:Number(chapter_number)},
+                {"chapter_name.english" : chapter_number}
+               ]
               }
             }
           ],
@@ -95,7 +96,7 @@ catch(err){
 
 }
 
-
+// HERE THE CREATELEVEL
 
 const  createLevel  =   async(req,res)=>{
     
@@ -107,7 +108,7 @@ const  createLevel  =   async(req,res)=>{
       
       {
         $match:{
-          class_name:class_name
+          class_name:Number(class_name)
         }
       },
 
@@ -135,7 +136,10 @@ const  createLevel  =   async(req,res)=>{
           pipeline:[
             {
               $match:{
-              chapter_number:chapter_number
+                $or:[
+                  {chapter_number:Number(chapter_number)},
+                  {"chapter_name.english" : chapter_number}
+                 ]
               }
             }
           ],
@@ -166,7 +170,6 @@ const  createLevel  =   async(req,res)=>{
 const data =  req.body.map((item)=>({...item, ["chapterId"]: chapterId[0]._id, ["chapter_name"]:chapterId[0].chapter_name}));
 
 const newLevelData = await levelModel.insertMany(data);
-res.json(newLevelData);
 const levelId =  newLevelData.map((level)=> level._id);
 
 const updateChapter = await chapterModel.findByIdAndUpdate(chapterId[0]._id,{
@@ -177,7 +180,7 @@ const updateChapter = await chapterModel.findByIdAndUpdate(chapterId[0]._id,{
   }
 },{new:true});  
 
-console.log(updateChapter)
+
   }
 catch(err){
  res.status(401).json(err)

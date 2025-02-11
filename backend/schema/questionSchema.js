@@ -1,12 +1,13 @@
 
 
+const { request } = require("express");
 const mongoose = require("mongoose");
 
 
 const questionSchema = new mongoose.Schema({
 
-  level_name:{
-    type:String
+  level_number:{
+    type:Number
   },
   levelId:{
     type:mongoose.Schema.Types.ObjectId,
@@ -14,27 +15,27 @@ const questionSchema = new mongoose.Schema({
   },
  
      question_name:{
-      english:{
-        type:String,
-        required:true
-      },
-      hindi:{
-        type:String,
-        required:true
-      }
+        english:{
+          type:String,
+          required:true
+        },
+        hindi:{
+          type:String,
+          required:true
+        }
      },
      
    
      
      option:{
-        english:[
-         {type:String}
-        ],
-        hindi:[
-          {
-            type:String
-          }
-        ]
+        english:[{
+          type:String,
+          required:true
+        }],
+        hindi:[{
+          type:String,
+          required:true
+        }]
      },
      
      answer:{
@@ -44,13 +45,16 @@ required:true
      },
      image:{
        type:String,
-     
+       default:null
      },
       medium:{
         type:String,
-        
+       required:true
       },
+
+
       explanation:{
+       type:{
         english:{
           type:String,
           required:true
@@ -58,8 +62,32 @@ required:true
         hindi:{
           type:String,
           required:true
-        }
+        },
+       },
+       default:null
+    
+      },
+
+      solution:{
+        type:[{
+          step:{
+             type:Number,
+             required:true
+          },
+          value:{
+             terms:{
+              type:String,
+              required:true
+             },
+             calculation:{
+              type:String,
+              default:null
+             }
+          }
+         }],
+        default:null
       }
+      
 
      
      

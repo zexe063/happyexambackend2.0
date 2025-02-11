@@ -9,12 +9,14 @@ const subjectRouter = require("./route/subjectRoute");
 const chapterRouter =require("./route/chapterRoute");
 const levelRouter = require("./route/levelRoute");
 const questionRouter = require("./route/questionRoute");
+const ReportQuestionController = require("./route/ReportQuestionRoute")
 
 // dataabse connection call//
 db()
 
 
 const cors = require("cors");
+const ReportQuestionRouter = require("./route/ReportQuestionRoute");
 
 
 server.use(express.json());
@@ -24,7 +26,8 @@ server.use("/class", classRouter);
 server.use("/subject", subjectRouter);
 server.use("/chapter", chapterRouter);
 server.use("/level", levelRouter);
-server.use("/question", questionRouter)
+server.use("/question", questionRouter);
+server.use("/", ReportQuestionRouter);
 
 
 server.listen(process.env.PORT, (req,res)=>{

@@ -12,7 +12,7 @@ const getChapter = async(req,res)=>{
     const getChapterData = await classModel.aggregate([
         {
             $match:{
-                class_name:class_name
+                class_name:Number(class_name)
             }
         },
 
@@ -68,6 +68,8 @@ const getChapter = async(req,res)=>{
     ])
 
 
+
+
     if(!getChapterData || !getChapterData.length) return res.status(401).json("class || subject is invalid");
 
     res.json(getChapterData)
@@ -76,18 +78,21 @@ const getChapter = async(req,res)=>{
     catch(err){
   res.status(401).json(err)
     }
+
+
 }
 
 
 const createChapter =async(req,res)=>{
 const{class_name, subject_name} = req.params;
+console.log(class_name,subject_name)
  
 try{
     const subjectId =  await classModel.aggregate([
 
         {
             $match:{
-                 class_name:class_name
+                 class_name: Number(class_name)
             }
         },
         {
@@ -106,26 +111,27 @@ try{
             }
         },
     
-        {
-          $match : {
-            subjectData:{$ne:[]}
-          }
-        },
-    
-        {
-          $replaceRoot:{
-            newRoot:{
-                $first:"$subjectData"
-            }
-          }
-        }
+      
        
     
-    
+        {
+            $match : {
+              subjectData:{$ne:[]}
+            }
+          },
+      
+          {
+            $replaceRoot:{
+              newRoot:{
+                  $first:"$subjectData"
+              }
+            }
+          }
         
         
      ]);
-   
+ 
+
      
     
     if(!subjectId || !subjectId.length) return res.json(" class  || subject is invalid") 
@@ -135,7 +141,7 @@ try{
      const newchapterData  = await chapterModel.insertMany(data);
      res.json(newchapterData);
      const chapterId = newchapterData.map((chapter)=>chapter._id);
-     console.log(chapterId)
+   
     
      const updateSubject = await subjectModel.findByIdAndUpdate(subjectId[0]._id,{
         $push:{
@@ -145,7 +151,6 @@ try{
         }
      },{new:true});
     
-     console.log(updateSubject);
 
 }
 catch(err){

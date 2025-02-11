@@ -6,7 +6,7 @@ const mongoose = require("mongoose");
 
 const classSchema = new mongoose.Schema({
     class_name:{
-        type:String,
+        type:Number,
         required:true
     },
     subject:[{
