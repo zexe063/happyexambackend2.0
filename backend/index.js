@@ -29,7 +29,9 @@ server.use("/level", levelRouter);
 server.use("/question", questionRouter);
 server.use("/", ReportQuestionRouter);
 
-
+server.get("/", (req,res)=>{
+ res.send("hello happyexam")
+})
 server.listen(process.env.PORT, (req,res)=>{
  console.log(`server is started ||${process.env.PORT} `)
 })
