@@ -21,17 +21,17 @@ const ReportQuestionRouter = require("./route/ReportQuestionRoute");
 
 server.use(express.json());
 server.use(cors())
-
+server.get("/", (req,res)=>{
+    res.send("hello happyexam")
+   })
 server.use("/class", classRouter);
 server.use("/subject", subjectRouter);
 server.use("/chapter", chapterRouter);
 server.use("/level", levelRouter);
 server.use("/question", questionRouter);
-server.use("/", ReportQuestionRouter);
+server.use("/ReportQuestion", ReportQuestionRouter);
 
-server.get("/", (req,res)=>{
- res.send("hello happyexam")
-})
+
 server.listen(process.env.PORT, (req,res)=>{
  console.log(`server is started ||${process.env.PORT} `)
 })
