@@ -22,7 +22,7 @@ const ReportQuestionRouter = require("./route/ReportQuestionRoute");
 server.use(express.json());
 server.use(cors())
 server.get("/", (req,res)=>{
-    res.send("hello production happydxa,")
+    res.send("hello production happydxa")
    })
 server.use("/class", classRouter);
 server.use("/subject", subjectRouter);

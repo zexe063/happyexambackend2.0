@@ -83,6 +83,16 @@ const getChapter = async(req,res)=>{
 }
 
 
+//  get course function and many more
+
+const getCourse  = async(req,res)=>{
+    console.log(req.query)
+   const result = await  subjectModel.find({class_name:10}).populate({path:"chapter"})
+  res.json(result)
+ 
+
+}
+
 const createChapter =async(req,res)=>{
 const{class_name, subject_name} = req.params;
 console.log(class_name,subject_name)
@@ -164,4 +174,4 @@ catch(err){
 
 }
 
-module.exports = {getChapter,createChapter}
+module.exports = {getChapter, getCourse, createChapter}
