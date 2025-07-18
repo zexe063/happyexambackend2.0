@@ -180,6 +180,7 @@ const updateChapter = await chapterModel.findByIdAndUpdate(chapterId[0]._id,{
   }
 },{new:true});  
 
+res.json(newLevelData)
 
   }
 catch(err){

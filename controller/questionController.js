@@ -110,7 +110,11 @@ catch(err){
 // HERE THE CREATEQUETSION
 
 const createQuestion = async(req,res)=>{
+
     try{
+    
+
+         
     const { class_name, subject_name, chapter_number,level_number} =  req.params;
    
     const levelId= await classModel.aggregate([
@@ -197,6 +201,7 @@ const data = req.body.map((item)=>({...item, ["levelId"]:levelId[0]._id, ["level
 const newQuetsionData  = await questionModel.insertMany(data);
 res.json(newQuetsionData);
 
+
 const questionId = newQuetsionData.map((question)=>question._id);
 
 const updateLevel =await levelModel.findByIdAndUpdate(levelId[0]._id, {
@@ -215,4 +220,22 @@ const updateLevel =await levelModel.findByIdAndUpdate(levelId[0]._id, {
 
 }
 
-module.exports={getQuestion,createQuestion}
+
+const deleteQuestion = async(req,res)=>{
+    
+    try{
+      
+       
+
+        const levelmode = await levelModel.findByIdAndUpdate(req.body.levelId,{question:[]},{new:true})
+        const deleteQuestionData = await  questionModel.deleteMany({_id:{$in:req.body.questionId}})
+        console.log(levelModel)
+        
+         res.json(deleteQuestion)
+    }
+     catch(err){
+ console.log("something wonrg", err)
+     }
+}
+
+module.exports={getQuestion,createQuestion, deleteQuestion}

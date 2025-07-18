@@ -10,6 +10,7 @@ const getSubject = async(req,res)=>{
    try{
 
     const  {class_name} = req.params;
+    console.log(class_name)
      const getSubjectData =  await classModel.findOne({class_name:class_name})
      .populate({
         path:"subject",

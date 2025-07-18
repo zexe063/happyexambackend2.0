@@ -13,6 +13,11 @@ const questionSchema = new mongoose.Schema({
     type:mongoose.Schema.Types.ObjectId,
     ref:"level"
   },
+
+  question_type:{
+ type:String,
+ default:"MCQ"
+  },
  
      question_name:{
         english:{
@@ -69,23 +74,26 @@ required:true
       },
 
       solution:{
-        type:[{
-          step:{
-             type:Number,
-             required:true
+        type:[
+          
+          {
+          step:{type:Number,required:true},
+          terms:{ english:{type:String, required:true},hindi:{type:String,required:true}},
+
+         value:{ 
+          _id:false,
+          type:{
+            image:{type:String, default:null},
+          calculation:{_id:false, type:{ english:{type:String, required:true}, hindi:{type:String, required:true} },default:null}
           },
-          value:{
-             terms:{
-              type:String,
-              required:true
-             },
-             calculation:{
-              type:String,
-              default:null
-             }
+
+          default: null
           }
-         }],
-        default:null
+         
+        }
+       
+        ],
+      
       }
       
 
