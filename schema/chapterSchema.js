@@ -25,6 +25,10 @@ subject_name:{
       required:true
   }
 },
+class_name:{
+  type:Number,
+  required:true
+},
 
 subjectId:{
   type:mongoose.Schema.Types.ObjectId,

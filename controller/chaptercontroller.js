@@ -86,10 +86,8 @@ const getChapter = async(req,res)=>{
 //  get course function and many more
 
 const getCourse  = async(req,res)=>{
-    console.log(req.query)
-   const result = await  subjectModel.find({class_name:10}).populate({path:"chapter"})
-  res.json(result)
- 
+    const getCourseData = await chapterModel.find({$and:[{class_name:10, recommended:true}]},{level:0})
+    res.json(getCourseData)
 
 }
 
