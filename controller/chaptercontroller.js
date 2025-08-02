@@ -83,13 +83,8 @@ const getChapter = async(req,res)=>{
 }
 
 
-//  get course function and many more
 
-const getCourse  = async(req,res)=>{
-    const getCourseData = await chapterModel.find({$and:[{class_name:10, recommended:true}]},{level:0})
-    res.json(getCourseData)
 
-}
 
 const createChapter =async(req,res)=>{
 const{class_name, subject_name} = req.params;
@@ -172,4 +167,4 @@ catch(err){
 
 }
 
-module.exports = {getChapter, getCourse, createChapter}
+module.exports = {getChapter, createChapter}

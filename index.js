@@ -10,6 +10,7 @@ const chapterRouter =require("./route/chapterRoute");
 const levelRouter = require("./route/levelRoute");
 const questionRouter = require("./route/questionRoute");
 const ReportQuestionController = require("./route/ReportQuestionRoute")
+const courseRouter = require("./route/courseRouter")
 
 // dataabse connection call//
 db()
@@ -26,6 +27,7 @@ server.get("/", (req,res)=>{
    })
 server.use("/class", classRouter);
 server.use("/subject", subjectRouter);
+server.use("/", courseRouter);
 server.use("/chapter", chapterRouter);
 server.use("/level", levelRouter);
 server.use("/question", questionRouter);

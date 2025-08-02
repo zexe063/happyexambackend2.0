@@ -44,7 +44,8 @@ subjectId:{
      type:String,
      default:null
      },
-
+recommended:Boolean,
+new:Boolean,
 
     level:[{
 type:mongoose.Schema.Types.ObjectId,
