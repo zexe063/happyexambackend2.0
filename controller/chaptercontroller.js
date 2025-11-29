@@ -67,16 +67,13 @@ const getChapter = async(req,res)=>{
         
     ])
 
+    if(!getChapterData || !getChapterData.length) return res.status(401).json({success:false, message: "class || subject is invalid"});
 
-
-
-    if(!getChapterData || !getChapterData.length) return res.status(401).json("class || subject is invalid");
-
-    res.json(getChapterData)
+    res.json({success:true, result:getChapterData})
 
     }
     catch(err){
-  res.status(401).json(err)
+   res.status(500).json({success:false, message:"Server Error please try again later"})
     }
 
 
@@ -88,7 +85,6 @@ const getChapter = async(req,res)=>{
 
 const createChapter =async(req,res)=>{
 const{class_name, subject_name} = req.params;
-console.log(class_name,subject_name)
  
 try{
     const subjectId =  await classModel.aggregate([
@@ -137,15 +133,14 @@ try{
 
      
     
-    if(!subjectId || !subjectId.length) return res.json(" class  || subject is invalid") 
+    if(!subjectId || !subjectId.length) return res.json({success:false, message:" class || subject is invalid"}) 
        
-     const data = req.body.map((item)=>({...item, ["subjectId"]:subjectId[0]._id, ["subject_name"]:subjectId[0].subject_name}));
+     const data = req.body.map((item)=>({...item, ["subjectId"]:subjectId[0]?._id, ["subject_name"]:subjectId[0]?.subject_name}));
 
      const newchapterData  = await chapterModel.insertMany(data);
-     res.json(newchapterData);
+      if(!newchapterData) return res.status(401).json({success:false, result:newchapterData});
+
      const chapterId = newchapterData.map((chapter)=>chapter._id);
-   
-    
      const updateSubject = await subjectModel.findByIdAndUpdate(subjectId[0]._id,{
         $push:{
             chapter:{
@@ -153,17 +148,12 @@ try{
             }
         }
      },{new:true});
-    
+      res.json({success:true, result:newchapterData});
 
 }
 catch(err){
-    console.log(err);
+    res.status(500).json({success:false, message:"Server Error please try again later"})
 }
-
-
- 
- 
-
 
 }
 

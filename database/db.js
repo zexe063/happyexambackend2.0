@@ -3,17 +3,18 @@ const mongoose = require("mongoose");
 
 
   
-function db(){
+async function db(req,res){
  try{
 
-  const databaseEstablished = mongoose.connect(process.env.MOONGOOSE).then((connect)=>{
+  const databaseEstablished = await  mongoose.connect(process.env.MOONGOOSE).then((connect)=>{
     console.log(`📦 Connected to MongoDB|| ${connect.connection.host}`)
   })
 
  }
  catch(err){
-  console.log("error")
+console.log(err);
  }
+ 
  
  
 }

@@ -6,8 +6,14 @@ const {classModel} = require("../schema/classSchema");
 
 
 const  getClass = async(req,res)=>{
-     const classData = await  classModel.find();
-     res.json(classData);
+    try{
+       const classData = await  classModel.find();
+        if(!classData) return res.status(404).json({success:false, message:"class-name not found"})
+        res.json({success:true, result:classData});
+    }
+    catch(err){
+       res.status(500).json({success:false, message:"Server Error please try again later"})
+    }
      
 }
 
@@ -15,10 +21,12 @@ const  getClass = async(req,res)=>{
 const  createClass = async(req,res)=>{
    try{
      const newClassData = await classModel.insertMany(req.body);
-     res.json(newClassData);
+
+     if(!newClassData) return res.status(401).status({success:false, message:"Something went wrong"});
+     res.json({success:true,result:newClassData});
    }
    catch(err){
-      res.json(err)
+       res.status(500).json({success:false, message:"Server Error please try again later"})
    }
 
 }

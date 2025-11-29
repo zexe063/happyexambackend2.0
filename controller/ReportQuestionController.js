@@ -6,20 +6,22 @@ const { report } = require("../route/questionRoute");
 const getReportQuestion =  async(req, res)=>{
    try{
     const getReportQuestionData = await reportQuestionModel.find();
-    res.json(getReportQuestionData)
+     if(!getReportQuestion) return res.status(401).json({success:false, message:"Something went wrong"});
+    res.json({success:true, result:getReportQuestionData})
    }
    catch(err){
-    res.json(err)
+       res.status(500).json({success:false, message:"Server Error please try again later"})
    }
 }
 const createReportQuestion = async(req,res)=>{
     try{
-        const data = await new reportQuestionModel(req.body);
-        res.json(data)     
+        const createReportQuestionData= await new reportQuestionModel(req.body);
+         if(!createReportQuestionData) return  res.status(401).json({success:false, message:" Something went wrong"});
+           await data.save()
+        res.json({success:true, result:createReportQuestionData});  
 
-         await data.save()
     }catch(err){
-        res.json(err)
+           res.status(500).json({ success:false, message:"Server Error please try again later"})
     }
 }
  module.exports = {getReportQuestion,  createReportQuestion};

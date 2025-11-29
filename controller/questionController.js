@@ -99,11 +99,11 @@ const getQuestion = async(req,res)=>{
     ])
    
     
-    if(!getQuestionData || !getQuestionData.length) return res.status(401).json("class_name || subject_name || chapter_number || level_name is invalid");
-    res.json(getQuestionData);
+    if(!getQuestionData || !getQuestionData.length) return res.status(401).json({success:false, message:"class-name || subject-name || chapter-number || level-name is invalid"});
+    res.json({success:true, result:getQuestionData});
 }
 catch(err){
-    console.log(err)
+      res.status(500).json({success:false, message:"Server Error please try again later"})
 }
 }
 
@@ -193,18 +193,17 @@ const createQuestion = async(req,res)=>{
             }
         }
     ])
-    if(!levelId || !levelId.length) return res.status(401).json("class_name || subject_name || chapter_number || level_name is invalid");
+    if(!levelId || !levelId.length) return res.status(401).json({success:false, message:"class-name || subject-name || chapter-number || level_name is invalid"});
 
 
-const data = req.body.map((item)=>({...item, ["levelId"]:levelId[0]._id, ["level_number"]:levelId[0].level_number}));
+const data = req.body.map((item)=>({...item, ["levelId"]:levelId[0]?._id, ["level_number"]:levelId[0]?.level_number}));
 
 const newQuetsionData  = await questionModel.insertMany(data);
-res.json(newQuetsionData);
+ if(!newQuetsionData) return res.status(401).json({success:false, message:"Something went wrong"});
 
+const questionId = newQuetsionData.map((question)=>question?._id);
 
-const questionId = newQuetsionData.map((question)=>question._id);
-
-const updateLevel =await levelModel.findByIdAndUpdate(levelId[0]._id, {
+const updateLevel =await levelModel.findByIdAndUpdate(levelId[0]?._id, {
     $push:{
         question:{
             $each:questionId
@@ -212,9 +211,10 @@ const updateLevel =await levelModel.findByIdAndUpdate(levelId[0]._id, {
     }
 },{new:true});
 
+ res.json({success:true, result:newQuetsionData});
     
 }catch(err){
-    console.log(err)
+   res.status(500).json({success:false, message:"Server Error please try again later"})
 }
 
 
@@ -229,12 +229,11 @@ const deleteQuestion = async(req,res)=>{
 
         const levelmode = await levelModel.findByIdAndUpdate(req.body.levelId,{question:[]},{new:true})
         const deleteQuestionData = await  questionModel.deleteMany({_id:{$in:req.body.questionId}})
-        console.log(levelModel)
         
          res.json(deleteQuestion)
     }
      catch(err){
- console.log("something wonrg", err)
+     res.status(500).json({success:false, message:"Server Error please try again later"})
      }
 }
 
