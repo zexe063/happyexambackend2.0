@@ -36,15 +36,17 @@ const getUser = async(req,res)=>{
 
 const verifyUser = async(req,res)=>{
    try{
-       
+      
     const userId =  jwt.verify(req.cookies?.userId, process.env.SECRET_KEY)?.userId;
-    const verifiedUserData  = await userModel.findById(userId);
+    const verifiedUserData  = await userModel.findById(userId).populate({path:"recommendedChapter"}).select({password:0, levelCompleted:0});
 
     if(!verifiedUserData) return req.status(404).json({success:false, message:"User not found"});
 
     res.status(200).json({success:true, result:verifiedUserData});
 
    }catch(err){
+
+      if(err.name ==="JsonWebTokenError") return res.status(401).json({success:"false", message:"User token verify failed"})
       res.status(500).json({success:false, message:"Server Error. please try again later"});
    }
 }
@@ -150,13 +152,18 @@ try{
       break;
 
        case  'LEVEL-COMPLETED':
-         const payload = req.body?.payload 
+         const payload = req.body?.payload;
          if(!payload) return res.status(404).json({success:false, message:"Payload is not defined"});
 
         const user = await userModel.findById(userId)
-       
         if(!user) return res.status(404).json({success:false, message:"user not found"});
-        const chapter = user.levelCompleted.find((item)=> payload.chapterId === item.chapterId);
+
+        const chapterResult = await chapterModel.findOne({'chapter_name.english': payload.chapter_name})
+        if(!chapterResult)  return res.status(404).json({success:false, message:"chapter is not valid"})
+
+        const chapterId = chapterResult._id.toString();
+        const chapter = user.levelCompleted.find((item)=>chapterId === item.chapterId);
+   
       
       
           if(chapter){
@@ -167,7 +174,7 @@ try{
                const updatedData = await userModel.findOneAndUpdate(
                   {
                      _id:userId, 
-                     "levelCompleted.chapterId": payload.chapterId
+                     "levelCompleted.chapterId": chapterId
                   }, 
                   
                   {
@@ -180,16 +187,16 @@ try{
                   {new:true}
                   
                ).select({HEP:1, questionAttempt:1});
-              
+
                return res.status(200).json({ action:"LEVEL-COMPLETED", message:"Existing chapter level is Updated", response:updatedData });
              }
              
-             return res.status(200).json({action:"LEVEL-COMPLETED", message:"Level is already Existed so no reward", response:{_id:user._id, HEP:user.HEP, questionAttempt:user.questionAttempt} })
+             return res.status(200).json({action:"LEVEL-COMPLETED", message:"Level is already Completed so no reward", response:{_id:user._id, HEP:user.HEP, questionAttempt:user.questionAttempt} })
              
              
           }
           else{
-             const chapterData = {chapterId:payload.chapterId, chapter_name:{...payload.chapter_name},levels:[payload.levelId]}
+             const chapterData = {chapterId:chapterId, chapter_name:{...chapterResult?.chapter_name},levels:[payload.levelId]}
 
             const updatedData = await userModel.findByIdAndUpdate(
                userId, 
@@ -226,6 +233,7 @@ try{
 
 }
 catch(err){
+
 res.status(401).json({success:false, message:"Server Error: please try again later"})
 }
 }

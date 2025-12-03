@@ -212,6 +212,7 @@ res.json({success:true, result:newLevelData})
 
   }
 catch(err){
+  console.log(err)
   res.status(500).json({esuccess:false, message:"Server Error please try again later"})
 }
  
