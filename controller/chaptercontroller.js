@@ -1,6 +1,7 @@
 
 
 
+const { json } = require("express");
 const  {chapterModel} = require("../schema/chapterSchema");
 const { classModel } = require("../schema/classSchema");
 const { subjectModel } = require("../schema/subjectSchema");
@@ -157,4 +158,6 @@ catch(err){
 
 }
 
-module.exports = {getChapter, createChapter}
+
+
+module.exports = {getChapter, createChapter};

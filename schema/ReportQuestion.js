@@ -2,16 +2,22 @@
 
 const  mongoose = require("mongoose");
 
- const ReportQuestionSchema =  mongoose.Schema({
+ const reportQuestionSchema =  mongoose.Schema({
  questionId:{
     type:String,
     required:true
  },
  value:{
-    type:String,
-    required:true
- }
+   type:[
+      {
+         type:String,
+         required:true
+      }
+   ],
+   required:true
+   
+ },
 
  })
 
- exports.reportQuestionModel =  mongoose.model("ReportQuestion", ReportQuestionSchema)
+ exports.reportQuestionModel =  mongoose.model("reportQuestion", reportQuestionSchema)

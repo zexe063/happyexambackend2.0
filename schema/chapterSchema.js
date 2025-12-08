@@ -14,7 +14,18 @@ const chapterSchema = new mongoose.Schema({
     required:true
   }
 },
-    
+
+chapter_title:{
+    english:{
+      type:String,
+      required:true
+    },
+  hindi:{
+    type:String,
+    required:true
+  }
+},
+
 subject_name:{
   english:{
       type:String,

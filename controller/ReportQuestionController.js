@@ -4,6 +4,7 @@ const {ReportQuestionModel, reportQuestionModel} = require("../schema/ReportQues
 const { report } = require("../route/questionRoute");
 
 const getReportQuestion =  async(req, res)=>{
+
    try{
     const getReportQuestionData = await reportQuestionModel.find();
      if(!getReportQuestion) return res.status(401).json({success:false, message:"Something went wrong"});
@@ -15,10 +16,14 @@ const getReportQuestion =  async(req, res)=>{
 }
 const createReportQuestion = async(req,res)=>{
     try{
+         if(!req.body.questionId || !req.body.value) return res.status(401).json({success:"false", message:"questionId and value is required"})
+
         const createReportQuestionData= await new reportQuestionModel(req.body);
          if(!createReportQuestionData) return  res.status(401).json({success:false, message:" Something went wrong"});
-           await data.save()
-        res.json({success:true, result:createReportQuestionData});  
+         
+       await createReportQuestionData.save()
+
+        res.status(200).json({success:true, message:"Ticket created successfuly", result:createReportQuestionData});  
 
     }catch(err){
            res.status(500).json({ success:false, message:"Server Error please try again later"})

@@ -8,9 +8,6 @@ const chapterRouter = require("../route/chapterRoute");
 const { userModel } = require("../schema/userSchema");
 const jwt = require("jsonwebtoken");
 
-
-
-
 const getLevel = async(req,res)=>{
   
   try{
@@ -20,7 +17,7 @@ const getLevel = async(req,res)=>{
   if(!userId) res.status(404).json({success:false, message:"userId is not Valid"});
   
     const  {class_name, subject_name, chapter_number} =  req.params;
-    const getLevelData =   await classModel.aggregate([
+    let getLevelData =   await classModel.aggregate([
       
       {
         $match:{
@@ -81,28 +78,38 @@ const getLevel = async(req,res)=>{
       {
       $unwind:"$levelData"
       },
+
       {
         $replaceRoot:{
           newRoot:"$levelData"
+
           
         }
+      },
+      {
+        $project:{question:0}
       }
       
     
        
     ])
 
+
     if(!getLevelData || !getLevelData.length) return res.status(401).json({success:false, message:"class-name || subject-name || chapter-number is invalid"})
 
-    const user = await userModel.findById(userId);
+    const user = await userModel.findById(userId).select("+courseCompleted");
  if(!user) return res.status(404).json({success:false, message:"user not found"});
- 
- const levels =  user.levelCompleted.find((item)=> item.chapterId === getLevelData[0]?.chapterId.toString())?.levels || []
+
+  const chapter = await chapterModel.findById(getLevelData[0].chapterId).select({_id:0, chapter_name:1,chapter_title:1,chapter_image:1});
+
+  if(!chapter) return res.status(401).json({success:false, message:"Chapter not found"});
+
+ const levels =  user.courseCompleted.find((item)=> item.chapterId === getLevelData[0]?.chapterId.toString())?.levels || []
 
 
 
   const isLevelCompletedData = getLevelData.map((level)=>{
-       return {...level, isCompleted: levels.toString().includes(level?._id)}
+       return {...level, ...chapter?._doc, isCompleted: levels.toString().includes(level?._id)}
      })
     
 
@@ -113,11 +120,15 @@ const getLevel = async(req,res)=>{
      }
    }
 
+   
   res.status(200).json({success:true , result:isLevelCompletedData})
 
 
 }
 catch(err){
+  if(err.name === "JsonWebTokenError"){
+  return res.status(401).json({success:false, code:"TOKEN_FAILED", message:"Active user required. Please login again"})
+ }
  res.status(500).json({success:false, message:"Server Error please try again later"})
 }
 
@@ -186,9 +197,7 @@ const  createLevel  =   async(req,res)=>{
           $first:"$chapterData"
           }
         }
-      }
-      
-    
+      }   
        
     ])
 

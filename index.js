@@ -9,9 +9,9 @@ const subjectRouter = require("./route/subjectRoute");
 const chapterRouter =require("./route/chapterRoute");
 const levelRouter = require("./route/levelRoute");
 const questionRouter = require("./route/questionRoute");
-const ReportQuestionController = require("./route/ReportQuestionRoute")
-const courseRouter = require("./route/courseRouter")
-const userRouter = require("./route/userRouter")
+const reportQuestionRouter = require("./route/reportQuestionRoute")
+const courseRouter = require("./route/courseRoute")
+const userRouter = require("./route/userRoute")
 const cookieParse = require("cookie-parser");
 const jwt = require("jsonwebtoken");
 
@@ -23,8 +23,6 @@ const corsOption ={
  credentials:true
 }
 const cors = require("cors");
-const ReportQuestionRouter = require("./route/ReportQuestionRoute");
-
 
 server.use(express.json());
 server.use(cors(corsOption))
@@ -36,11 +34,11 @@ server.get("/", (req,res)=>{
 server.use('/user', userRouter)
 server.use("/class", classRouter);
 server.use("/subject", subjectRouter);
-server.use("/", courseRouter);
+server.use("/course", courseRouter);
 server.use("/chapter", chapterRouter);
 server.use("/level", levelRouter);
 server.use("/question", questionRouter);
-server.use("/ReportQuestion", ReportQuestionRouter);
+server.use("/reportquestion", reportQuestionRouter);
 
 
 

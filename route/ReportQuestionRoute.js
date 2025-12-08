@@ -1,11 +1,11 @@
 
 
 const express = require("express");
-const ReportQuestionRouter = express.Router();
-const {getReportQuestion , createReportQuestion} = require("../controller/ReportQuestionController");
+const reportQuestionRouter = express.Router();
+const {getReportQuestion , createReportQuestion} = require("../controller/reportQuestionController");
 
-ReportQuestionRouter.get("/", getReportQuestion)
-ReportQuestionRouter.post("/", createReportQuestion);
+reportQuestionRouter.get("/", getReportQuestion)
+reportQuestionRouter.post("/", createReportQuestion);
 
- module.exports = ReportQuestionRouter;
+ module.exports = reportQuestionRouter;
 

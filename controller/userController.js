@@ -1,8 +1,8 @@
-
-const { response, json } = require("express");
+const bcrypt = require("bcryptjs");
 const {userModel} = require("../schema/userSchema");
 const jwt =require("jsonwebtoken");
 const { chapterModel } = require("../schema/chapterSchema");
+const { default: mongoose } = require("mongoose");
 
 
 
@@ -14,18 +14,24 @@ const getUser = async(req,res)=>{
    if(!email || !password) return res.status(400).json({success:false, message:"userId and Password is required"});
  
   
-    const user = await userModel.findOne({email:email, password:password}).populate({path:"recommendedChapter", select:"-level"}).select({password:0, levelCompleted:0})
-    
-    if(!user) return  res.status(401).json({success:false, message:"email and password are invalid"});
-    
+    const user = await userModel.findOne({email:email}).populate({path:"recommendedChapter",select:"-level"}).select("+password");
+
+    if(!user)  return res.status(401).json({success:false, message:"User not found"})
+
+   const isMatch = await bcrypt.compare(password, user.password);
+    if(!isMatch) return  res.status(401).json({success:false, message:"email and password are invalid"});
+
+     delete user._doc.password;
    //  NOW AFTER USER GET DATA
-      const token = jwt.sign({userId:user._id}, process.env.SECRET_KEY);
-      res.cookie('userId', token, {httpOnly:true, secure:false, sameSite:"lax", maxAge:7*24*60*60*1000, path:"/"});
-     res.status(200).json({success:true, result:user});
+   const token = jwt.sign({userId:user._id}, process.env.SECRET_KEY);
+   res.cookie('userId', token, {httpOnly:true, secure:false, sameSite:"lax", maxAge:7*24*60*60*1000, path:"/"});
+    res.status(200).json({success:true, result:user});
 
  
  }
  catch(err){
+   console.log(err)
+
    res.status(500).json({
       success:false,
       message:"Server Error. please try again later"
@@ -38,7 +44,7 @@ const verifyUser = async(req,res)=>{
    try{
       
     const userId =  jwt.verify(req.cookies?.userId, process.env.SECRET_KEY)?.userId;
-    const verifiedUserData  = await userModel.findById(userId).populate({path:"recommendedChapter"}).select({password:0, levelCompleted:0});
+    const verifiedUserData  = await userModel.findById(userId).populate({path:"recommendedChapter", select:"-level"});
 
     if(!verifiedUserData) return req.status(404).json({success:false, message:"User not found"});
 
@@ -54,8 +60,10 @@ const verifyUser = async(req,res)=>{
 
 const createUser = async(req,res)=>{
    try{
-       
-    const UserRegistrationData  = {...req.body, hearts:3, HEP:0,  isPremium:false, questionAttempt:0};
+
+       const password =  await bcrypt.hash(req.body.password, 10);
+
+    const UserRegistrationData  = {...req.body, password:password, hearts:3, HEP:0,  isPremium:false, questionAttempt:0};
 
      const ExistedUser = await userModel.findOne({email:UserRegistrationData.email});
 
@@ -75,7 +83,7 @@ const createUser = async(req,res)=>{
       res.cookie('userId', token, {httpOnly:true, secure:true, sameSite:"strict", maxAge:7*24*24*60*1000});
 
       // POPULATE RECCOMENDED CHAPTER
-      const newuserData = await userModel.findById(newUser._id).populate({path:"recommendedChapter", select:"-level"}).select({password:0,levelCompleted:0});
+      const newuserData = await userModel.findById(newUser._id).populate({path:"recommendedChapter", select:"-level"})
 
       // SEDING RESPONSE
    res.status(200).json({success:true, result:newuserData});
@@ -85,6 +93,7 @@ const createUser = async(req,res)=>{
   
    }
    catch(err){
+     
       res.status(500).json({
         success:false,
         message:"Server Error. please try again later"
@@ -155,14 +164,14 @@ try{
          const payload = req.body?.payload;
          if(!payload) return res.status(404).json({success:false, message:"Payload is not defined"});
 
-        const user = await userModel.findById(userId)
+        const user = await userModel.findById(userId).select("+courseCompleted")
         if(!user) return res.status(404).json({success:false, message:"user not found"});
 
         const chapterResult = await chapterModel.findOne({'chapter_name.english': payload.chapter_name})
         if(!chapterResult)  return res.status(404).json({success:false, message:"chapter is not valid"})
 
         const chapterId = chapterResult._id.toString();
-        const chapter = user.levelCompleted.find((item)=>chapterId === item.chapterId);
+        const chapter = user.courseCompleted.find((item)=>chapterId === item.chapterId);
    
       
       
@@ -174,11 +183,11 @@ try{
                const updatedData = await userModel.findOneAndUpdate(
                   {
                      _id:userId, 
-                     "levelCompleted.chapterId": chapterId
+                     "courseCompleted.chapterId": chapterId
                   }, 
                   
                   {
-                     $push:{'levelCompleted.$.levels':payload.levelId},
+                     $push:{'courseCompleted.$.levels':payload.levelId},
                      $inc:{HEP:payload.HEP,questionAttempt:10}
                      
                      
@@ -186,28 +195,71 @@ try{
             
                   {new:true}
                   
-               ).select({HEP:1, questionAttempt:1});
+               ).select("+courseCompleted")
+               
+                if(!updatedData) return res.status(401).json({success:false,message:"Something went wrong in existing level update"})
 
-               return res.status(200).json({ action:"LEVEL-COMPLETED", message:"Existing chapter level is Updated", response:updatedData });
+              const sortChapter = updatedData.courseCompleted.sort((a,b)=> b.levels.length - a.levels.length).slice(0,5).map((item)=> new mongoose.Types.ObjectId(item.chapterId))
+
+            const newRecommendeChapter = updatedData.recommendedChapter;
+            newRecommendeChapter.splice(0, sortChapter.length, ...sortChapter);
+            
+
+             const userUpdateData = await userModel.findByIdAndUpdate(
+                     userId, 
+                     {
+                      $set:{
+                     recommendedChapter:newRecommendeChapter
+                      }
+                     }, 
+
+                     {new:true})
+                 
+                     
+                  
+                  return res.status(200).json({ action:"LEVEL-COMPLETED", message:"Existing chapter level is Updated", result:{ HEP:updatedData.HEP, questionAttempt:updatedData.questionAttempt}});
+
+               
              }
-             
-             return res.status(200).json({action:"LEVEL-COMPLETED", message:"Level is already Completed so no reward", response:{_id:user._id, HEP:user.HEP, questionAttempt:user.questionAttempt} })
-             
+
+             return res.status(200).json({action:"LEVEL-COMPLETED", message:"Level is already Completed so no reward", result:{HEP:user.HEP, questionAttempt:user.questionAttempt} })
              
           }
           else{
              const chapterData = {chapterId:chapterId, chapter_name:{...chapterResult?.chapter_name},levels:[payload.levelId]}
 
+         
             const updatedData = await userModel.findByIdAndUpdate(
                userId, 
                {
-               $push:{levelCompleted:chapterData},
+               $push:{courseCompleted:chapterData},
                $inc:{HEP:payload.HEP,questionAttempt:10}
                },
 
               {new:true} 
-            ).select({HEP:1, questionAttempt:1})
-            res.status(200).json({action:"LEVEL-COMPLETED", message:"New chapter is created", result:updatedData })
+            ).select("+courseCompleted");
+             
+
+             if(!updatedData) return res.status(401).json({success:false,message:"Something went wrong in existing level update"})
+
+              const sortChapter = updatedData.courseCompleted.sort((a,b)=> b.levels.length - a.levels.length).slice(0,5).map((item)=> new mongoose.Types.ObjectId(item.chapterId))
+
+            const newRecommendeChapter = updatedData.recommendedChapter;
+            newRecommendeChapter.splice(0, sortChapter.length, ...sortChapter);
+            
+
+             const userUpdateData = await userModel.findByIdAndUpdate(
+                     userId, 
+                     {
+                      $set:{
+                     recommendedChapter:newRecommendeChapter
+                      }
+                     }, 
+
+                     {new:true})
+                 
+            
+            res.status(200).json({action:"LEVEL-COMPLETED", message:"New chapter is created", result: { HEP:updatedData.HEP, questionAttempt:updatedData.questionAttempt} })
           }
 
            
@@ -233,7 +285,7 @@ try{
 
 }
 catch(err){
-
+console.log(err)
 res.status(401).json({success:false, message:"Server Error: please try again later"})
 }
 }
@@ -262,45 +314,52 @@ const  userProfile = async(req,res)=>{
 
    ).select({_id:1, first_name:1, last_name:1,avatar:1, userPreference:1})
    if(!userUpdate) return res.status(401).json({success:false, message:"Something went wrong"});
-   res.status(200).json({ success:true, message:"Personal info update Sucessfull", result:userUpdate});
+   res.status(200).json({ success:true, message:"Personal info update Successfull", result:userUpdate});
 }
 catch(err){
  if(err.name === "JsonWebTokenError"){
-   res.status(401).json({success:false, message:"Active user required. Please login again"})
+   res.status(401).json({success:false, code:"TOKEN_FAILED", message:"Active user required. Please login again"})
  }
  else{
-    console.log(err)
       res.status(500).json({success:false, message:"Server Error please try again later"})
  }
 
 }
+
+
 
 }
 // USER PASSWORD UPDATE
 const userPassword = async(req,res)=>{
 
    try{
+  if(!req.body.currentPassword  || !req.body.newPassword) return res.status(401).json({success:false, message:"currentPassowrd and newPassword is required"})
 
- const userId = jwt.verify(req.cookies.userId, process.env.SECRET_KEY).userId
+  const userId = jwt.verify(req.cookies.userId, process.env.SECRET_KEY).userId
  const {currentPassword, newPassword}  = req.body;
 
+ const hashPassword = await bcrypt.hash(newPassword,  10);
+ 
 
- const  user = await userModel.findById(userId);
+ const  user = await userModel.findById(userId).select("+password")
+ const isMatch  = await bcrypt.compare(currentPassword, user.password); 
 
-  if(user.password === currentPassword){
-    const passwordUpdate  = await userModel.findByIdAndUpdate(userId, { $set: {'password':newPassword}}, {new:true});
-
-      if(passwordUpdate) return  res.status(200).json({success:true, message:"Password update sucessfully"})
-  } 
-else{
-   res.status(401).json({success:false, message:"current password is invalid"});
-}
-  
+  if(!isMatch) return res.status(401).json({success:false, message:"current password is invalid"});
+ 
+    const passwordUpdate  = await userModel.findByIdAndUpdate(
+      userId, 
+      {
+          $set:{'password':hashPassword }
+      }, 
+      {new:true}
+   );
+     res.status(200).json({success:true, message:"Password update successfully"})
+   
    }
    catch(err){
 
       if(err.name === "JsonWebTokenError"){
-   return res.status(401).json({success:false, message:"Active user required. Please login again"})
+   return res.status(401).json({success:false, code:"TOKEN_FAILED", message:"Active user required. Please login again"})
  }
       res.status(500).json({success:false, message:"Server Error please try again later"})
 

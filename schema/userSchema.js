@@ -17,7 +17,8 @@ first_name:{
     },
     password:{
         type:String,
-        required:true
+        required:true,
+        select:false
     },
     age:{
         type:Number,
@@ -77,9 +78,11 @@ first_name:{
 ],
 required:true
  },
-    levelCompleted:{
+    courseCompleted:{
         type:Array,
-        required:true
+        required:true,
+        default:[],
+        select:false
     },
     
     isPremium:{
