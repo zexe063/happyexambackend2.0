@@ -1,7 +1,6 @@
 
-const { json } = require("express");
-const {ReportQuestionModel, reportQuestionModel} = require("../schema/ReportQuestion");
-const { report } = require("../route/questionRoute");
+const {reportQuestionModel} = require("../schema/reportQuestion");
+
 
 const getReportQuestion =  async(req, res)=>{
 
