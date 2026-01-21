@@ -19,7 +19,7 @@ const jwt = require("jsonwebtoken");
 db()
 
 const corsOption ={
- origin:"https://happyexam.in/",
+ origin:"https://www.happyexam.in",
  credentials:true
 }
 const cors = require("cors");

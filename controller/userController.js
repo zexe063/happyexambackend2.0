@@ -273,7 +273,7 @@ try{
              const userSubscriptionData = await userModel.findByIdAndUpdate(userId,{$set:{isPremium:true}}, {new:true, runValidators:true}).select({isPremium:1})
 
              if(!userSubscriptionData) return res.status(404).json({action:"SUBSCRIPTION",message:"userId not valid"})
-             res.status(200).json({action:"SUBSCRIPTION",response:userSubscriptionData})
+             res.status(200).json({action:"SUBSCRIPTION",result:userSubscriptionData})
 
             break;
 
@@ -368,3 +368,5 @@ const userPassword = async(req,res)=>{
 }
 
 module.exports = {getUser, verifyUser, createUser, progressUser,userProfile, userPassword}
+
+

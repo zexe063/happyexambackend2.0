@@ -94,7 +94,6 @@ const getLevel = async(req,res)=>{
        
     ])
 
-
     if(!getLevelData || !getLevelData.length) return res.status(401).json({success:false, message:"class-name || subject-name || chapter-number is invalid"})
 
     const user = await userModel.findById(userId).select("+courseCompleted");
