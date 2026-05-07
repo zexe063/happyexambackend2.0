@@ -15,14 +15,17 @@ const userRouter = require("./route/userRoute")
 const cookieParse = require("cookie-parser");
 const jwt = require("jsonwebtoken");
 
+
+
 // database connection call//
 db()
 
 const corsOption ={
- origin:"https://www.happyexam.in",
+ origin:true,
  credentials:true
 }
 const cors = require("cors");
+const { questionModel } = require("./schema/questionSchema");
 
 server.use(express.json());
 server.use(cors(corsOption))
@@ -30,6 +33,9 @@ server.use(cookieParse())
 server.get("/", (req,res)=>{
     res.send("hello production happydxa")
    })
+
+   console.log("helo")
+
 
 server.use('/user', userRouter)
 server.use("/class", classRouter);
@@ -39,8 +45,6 @@ server.use("/chapter", chapterRouter);
 server.use("/level", levelRouter);
 server.use("/question", questionRouter);
 server.use("/reportquestion", reportQuestionRouter);
-
-
 
 server.listen(process.env.PORT, (req,res)=>{
  console.log(`server is started ||${process.env.PORT} `)

@@ -3,6 +3,11 @@
 const  mongoose = require("mongoose");
 
  const reportQuestionSchema =  mongoose.Schema({
+   userId:{
+      type:mongoose.Schema.Types.ObjectId,
+      ref:"user",
+      required:true
+   },
  questionId:{
     type:String,
     required:true
@@ -17,6 +22,10 @@ const  mongoose = require("mongoose");
    required:true
    
  },
+ description:{
+   type:String,
+   required:true
+ }
 
  })
 

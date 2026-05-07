@@ -2,13 +2,15 @@ const bcrypt = require("bcryptjs");
 const {userModel} = require("../schema/userSchema");
 const jwt =require("jsonwebtoken");
 const { chapterModel } = require("../schema/chapterSchema");
-const { default: mongoose } = require("mongoose");
+const { mongoose } = require("mongoose");
+
 
 
 
 const getUser = async(req,res)=>{
 
    try{
+
    const {email,password} = req.body;
    
    if(!email || !password) return res.status(400).json({success:false, message:"userId and Password is required"});
@@ -24,14 +26,13 @@ const getUser = async(req,res)=>{
      delete user._doc.password;
    //  NOW AFTER USER GET DATA
    const token = jwt.sign({userId:user._id}, process.env.SECRET_KEY);
+   
    res.cookie('userId', token, {httpOnly:true, secure:false, sameSite:"lax", maxAge:7*24*60*60*1000, path:"/"});
     res.status(200).json({success:true, result:user});
 
  
  }
  catch(err){
-   console.log(err)
-
    res.status(500).json({
       success:false,
       message:"Server Error. please try again later"
@@ -79,9 +80,6 @@ const createUser = async(req,res)=>{
        const token = jwt.sign({userId:newUser._id}, process.env.SECRET_KEY);
          await newUser.save()
 
-         //  SENDING COOKIE
-      res.cookie('userId', token, {httpOnly:true, secure:true, sameSite:"strict", maxAge:7*24*24*60*1000});
-
       // POPULATE RECCOMENDED CHAPTER
       const newuserData = await userModel.findById(newUser._id).populate({path:"recommendedChapter", select:"-level"})
 
@@ -106,13 +104,15 @@ const createUser = async(req,res)=>{
 
 // USER PROGRESS UPDATE
 
-const progressUser= async(req,res)=>{
+const progressEvent= async(req,res)=>{
 
 try{
-  
- if(!req.body.action && !req.body.userId) return  res.status(400).json({success:false, message:"Action or userId missing in request."});
 
- const {userId,action} = req.body
+  const userId = jwt.verify(req.cookies?.userId, process.env.SECRET_KEY)?.userId;
+
+ if(!req.body.action && !userId) return  res.status(400).json({success:false, message:"Action or userId missing in request."});
+
+ const {action} = req.body
  
  
 
@@ -272,7 +272,7 @@ try{
          case 'SUBSCRIPTION':
              const userSubscriptionData = await userModel.findByIdAndUpdate(userId,{$set:{isPremium:true}}, {new:true, runValidators:true}).select({isPremium:1})
 
-             if(!userSubscriptionData) return res.status(404).json({action:"SUBSCRIPTION",message:"userId not valid"})
+             if(!userSubscriptionData) return res.status(404).json({action:"SUBSCRIPTION",message:"Something went wrong"})
              res.status(200).json({action:"SUBSCRIPTION",result:userSubscriptionData})
 
             break;
@@ -285,8 +285,8 @@ try{
 
 }
 catch(err){
-console.log(err)
-res.status(401).json({success:false, message:"Server Error: please try again later"})
+ if(err.name ==="JsonWebTokenError") return res.status(401).json({success:"false", message:"User token verify failed"})
+res.status(501).json({success:false, message:"Server Error: please try again later"})
 }
 }
 
@@ -306,7 +306,7 @@ const  userProfile = async(req,res)=>{
        {
          $set:payload
       },
-      
+   
    {
       new:true,
       runValidators:true
@@ -318,7 +318,7 @@ const  userProfile = async(req,res)=>{
 }
 catch(err){
  if(err.name === "JsonWebTokenError"){
-   res.status(401).json({success:false, code:"TOKEN_FAILED", message:"Active user required. Please login again"})
+   res.status(401).json({success:false, code:"TOKEN_FAILED", message:"Active user required"})
  }
  else{
       res.status(500).json({success:false, message:"Server Error please try again later"})
@@ -367,6 +367,6 @@ const userPassword = async(req,res)=>{
 
 }
 
-module.exports = {getUser, verifyUser, createUser, progressUser,userProfile, userPassword}
+module.exports = {getUser, verifyUser, createUser,progressEvent, userProfile, userPassword}
 
 

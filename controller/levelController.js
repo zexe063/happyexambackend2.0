@@ -11,7 +11,7 @@ const jwt = require("jsonwebtoken");
 const getLevel = async(req,res)=>{
   
   try{
-  
+
  const userId  = jwt.verify(req.cookies?.userId, process.env.SECRET_KEY).userId;
  
   if(!userId) res.status(404).json({success:false, message:"userId is not Valid"});

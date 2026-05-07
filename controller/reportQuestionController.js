@@ -25,6 +25,7 @@ const createReportQuestion = async(req,res)=>{
         res.status(200).json({success:true, message:"Ticket created successfuly", result:createReportQuestionData});  
 
     }catch(err){
+         if(err.name === "ValidationError") return res.status(403).json({message:"false", message:err.errors});
            res.status(500).json({ success:false, message:"Server Error please try again later"})
     }
 }
