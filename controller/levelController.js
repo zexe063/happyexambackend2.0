@@ -205,7 +205,7 @@ const  createLevel  =   async(req,res)=>{
 const data =  req.body.map((item)=>({...item, ["chapterId"]: chapterId[0]?._id, ["chapter_name"]:chapterId[0]?.chapter_name}));
 
 const newLevelData = await levelModel.insertMany(data);
-if(!newLevelData) return res.status(401).json({successLfalse, message:"Something went wrong"});
+if(!newLevelData) return res.status(401).json({success:false, message:"Something went wrong"});
 
 const levelId =  newLevelData.map((level)=> level?._id);
 const updateChapter = await chapterModel.findByIdAndUpdate(chapterId[0]?._id,{

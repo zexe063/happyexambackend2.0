@@ -1,8 +1,8 @@
 const bcrypt = require("bcryptjs");
 const {userModel} = require("../schema/userSchema");
-const jwt =require("jsonwebtoken");
+const jwt =  require("jsonwebtoken");
 const { chapterModel } = require("../schema/chapterSchema");
-const { mongoose } = require("mongoose");
+const mongoose  = require("mongoose");
 
 
 
@@ -10,7 +10,6 @@ const { mongoose } = require("mongoose");
 const getUser = async(req,res)=>{
 
    try{
-
    const {email,password} = req.body;
    
    if(!email || !password) return res.status(400).json({success:false, message:"userId and Password is required"});
@@ -18,7 +17,7 @@ const getUser = async(req,res)=>{
   
     const user = await userModel.findOne({email:email}).populate({path:"recommendedChapter",select:"-level"}).select("+password");
 
-    if(!user)  return res.status(401).json({success:false, message:"User not found"})
+    if(!user)  return res.status(401).json({success:false, message:"email and password are invalid"})
 
    const isMatch = await bcrypt.compare(password, user.password);
     if(!isMatch) return  res.status(401).json({success:false, message:"email and password are invalid"});
@@ -33,9 +32,10 @@ const getUser = async(req,res)=>{
  
  }
  catch(err){
+   console.log(err)
    res.status(500).json({
       success:false,
-      message:"Server Error. please try again later"
+      message:"Server Error. please try again later",
    })
 }
 }
@@ -43,16 +43,16 @@ const getUser = async(req,res)=>{
 
 const verifyUser = async(req,res)=>{
    try{
-      
+
     const userId =  jwt.verify(req.cookies?.userId, process.env.SECRET_KEY)?.userId;
+
     const verifiedUserData  = await userModel.findById(userId).populate({path:"recommendedChapter", select:"-level"});
 
-    if(!verifiedUserData) return req.status(404).json({success:false, message:"User not found"});
+    if(!verifiedUserData) return res.status(404).json({success:false, message:"User not found"});
 
     res.status(200).json({success:true, result:verifiedUserData});
 
    }catch(err){
-
       if(err.name ==="JsonWebTokenError") return res.status(401).json({success:"false", message:"User token verify failed"})
       res.status(500).json({success:false, message:"Server Error. please try again later"});
    }
@@ -145,7 +145,7 @@ try{
            const userHearRefillData = await userModel.findByIdAndUpdate(
             userId, 
             {
-               $inc:{hearts:3}
+               $inc:{hearts:5}
             }, 
             {
                new:true,  
@@ -217,12 +217,12 @@ try{
                  
                      
                   
-                  return res.status(200).json({ action:"LEVEL-COMPLETED", message:"Existing chapter level is Updated", result:{ HEP:updatedData.HEP, questionAttempt:updatedData.questionAttempt}});
+                  return res.status(200).json({ action:"LEVEL-COMPLETED", success:true, message:"Existing chapter level is Updated", result:{ HEP:updatedData.HEP, questionAttempt:updatedData.questionAttempt}});
 
                
              }
 
-             return res.status(200).json({action:"LEVEL-COMPLETED", message:"Level is already Completed so no reward", result:{HEP:user.HEP, questionAttempt:user.questionAttempt} })
+             return res.status(200).json({action:"LEVEL-COMPLETED", success:true, message:"Level is already Completed so no reward", result:{HEP:user.HEP, questionAttempt:user.questionAttempt} })
              
           }
           else{
@@ -259,7 +259,7 @@ try{
                      {new:true})
                  
             
-            res.status(200).json({action:"LEVEL-COMPLETED", message:"New chapter is created", result: { HEP:updatedData.HEP, questionAttempt:updatedData.questionAttempt} })
+            res.status(200).json({action:"LEVEL-COMPLETED", success:true, message:"New chapter is created", result: { HEP:updatedData.HEP, questionAttempt:updatedData.questionAttempt} })
           }
 
            
@@ -272,7 +272,7 @@ try{
          case 'SUBSCRIPTION':
              const userSubscriptionData = await userModel.findByIdAndUpdate(userId,{$set:{isPremium:true}}, {new:true, runValidators:true}).select({isPremium:1})
 
-             if(!userSubscriptionData) return res.status(404).json({action:"SUBSCRIPTION",message:"Something went wrong"})
+             if(!userSubscriptionData) return res.status(404).json({action:"SUBSCRIPTION", success:true, message:"Something went wrong"})
              res.status(200).json({action:"SUBSCRIPTION",result:userSubscriptionData})
 
             break;
@@ -314,7 +314,7 @@ const  userProfile = async(req,res)=>{
 
    ).select({_id:1, first_name:1, last_name:1,avatar:1, userPreference:1})
    if(!userUpdate) return res.status(401).json({success:false, message:"Something went wrong"});
-   res.status(200).json({ success:true, message:"Personal info update Successfull", result:userUpdate});
+   res.status(200).json({ success:true, message:"Saved successfully!", result:userUpdate});
 }
 catch(err){
  if(err.name === "JsonWebTokenError"){
@@ -331,7 +331,7 @@ catch(err){
 }
 // USER PASSWORD UPDATE
 const userPassword = async(req,res)=>{
-
+   
    try{
   if(!req.body.currentPassword  || !req.body.newPassword) return res.status(401).json({success:false, message:"currentPassowrd and newPassword is required"})
 
@@ -367,6 +367,22 @@ const userPassword = async(req,res)=>{
 
 }
 
-module.exports = {getUser, verifyUser, createUser,progressEvent, userProfile, userPassword}
+
+
+const  deleteUser = async(req,res)=>{
+  try{
+   const userId = req.body.userId;
+      if(!userId) return res.status(404).json({success:false, message:"userId is required"})
+       const deleteUserData = await userModel.deleteOne({_id:userId})
+        
+       if(deleteUserData) return res.status(200).json({success:200, message:"userId delete successfully"});
+
+  }
+  catch(err){
+   res.status(500).json({success:false, message:"Server Error please try again later"})
+  } 
+}
+
+module.exports = {getUser, verifyUser, createUser,progressEvent, userProfile, userPassword, deleteUser}
 
 

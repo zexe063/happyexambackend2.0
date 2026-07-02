@@ -14,8 +14,9 @@ const courseRouter = require("./route/courseRoute")
 const userRouter = require("./route/userRoute")
 const cookieParse = require("cookie-parser");
 const jwt = require("jsonwebtoken");
+const dns = require("dns");
 
-
+dns.setServers(["1.1.1.1", "8.8.8.8"]);
 
 // database connection call//
 db()
@@ -25,7 +26,7 @@ const corsOption ={
  credentials:true
 }
 const cors = require("cors");
-const { questionModel } = require("./schema/questionSchema");
+
 
 server.use(express.json());
 server.use(cors(corsOption))
@@ -34,7 +35,6 @@ server.get("/", (req,res)=>{
     res.send("hello production happydxa")
    })
 
-   console.log("helo")
 
 
 server.use('/user', userRouter)
@@ -46,7 +46,11 @@ server.use("/level", levelRouter);
 server.use("/question", questionRouter);
 server.use("/reportquestion", reportQuestionRouter);
 
-server.listen(process.env.PORT, (req,res)=>{
+ 
+
+
+
+server.listen(process.env.PORT, '0.0.0.0', (req,res)=>{
  console.log(`server is started ||${process.env.PORT} `)
 })
 

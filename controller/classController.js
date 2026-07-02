@@ -22,7 +22,7 @@ const  createClass = async(req,res)=>{
    try{
      const newClassData = await classModel.insertMany(req.body);
 
-     if(!newClassData) return res.status(401).status({success:false, message:"Something went wrong"});
+     if(!newClassData) return res.status(401).json({success:false, message:"Something went wrong"});
      res.json({success:true,result:newClassData});
    }
    catch(err){

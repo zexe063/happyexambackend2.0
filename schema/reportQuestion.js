@@ -24,7 +24,8 @@ const  mongoose = require("mongoose");
  },
  description:{
    type:String,
-   required:true
+   required:false,
+   
  }
 
  })

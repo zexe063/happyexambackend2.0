@@ -53,7 +53,17 @@ first_name:{
          time:{
             type:String,
            required:true
+         },
+         sound:{
+            type:Boolean,
+            default:true
+         },
+
+         notification:{
+            type:Boolean,
+            default:true
          }
+
 
     },
      hearts:{
