@@ -15,14 +15,15 @@ const userRouter = require("./route/userRoute")
 const cookieParse = require("cookie-parser");
 const jwt = require("jsonwebtoken");
 const dns = require("dns");
+const cors = require("cors");
+
+const corsOption = {
+ origin:"https://www.happyexam.in",
+ credentials:true
+}
 
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
 
-const corsOption = {
- origin:true,
- credentials:true
-}
-const cors = require("cors");
 
 // database connection call//
 db()

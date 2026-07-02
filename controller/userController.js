@@ -64,7 +64,7 @@ const createUser = async(req,res)=>{
 
        const password =  await bcrypt.hash(req.body.password, 10);
 
-    const UserRegistrationData  = {...req.body, password:password, hearts:3, HEP:0,  isPremium:false, questionAttempt:0};
+    const UserRegistrationData  = {...req.body, password:password, hearts:5, HEP:0,  isPremium:false, questionAttempt:0};
 
      const ExistedUser = await userModel.findOne({email:UserRegistrationData.email});
 
