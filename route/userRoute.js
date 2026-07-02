@@ -8,11 +8,11 @@ const { getUser, verifyUser, createUser, ProgressEvent, userProfile, userPasswor
 const userRouter = express.Router();
 
  userRouter.get("/verify", verifyUser);
- userRouter.post("/login" , getUser)
- userRouter.post("/signup", createUser)
+ userRouter.post("/login", loginLimiter, getUser)
+ userRouter.post("/signup", signupLimiter, createUser)
  userRouter.put('/progress/event', progressEvent)
  userRouter.put("/profile", userProfile)
- userRouter.put("/password", userPassword)
+ userRouter.put("/password", changePasswordLimiter, userPassword)
  userRouter.delete("/delete", deleteUser);
 
 module.exports = userRouter;

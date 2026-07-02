@@ -18,14 +18,14 @@ const dns = require("dns");
 
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
 
-// database connection call//
-db()
-
-const corsOption ={
+const corsOption = {
  origin:true,
  credentials:true
 }
 const cors = require("cors");
+
+// database connection call//
+db()
 
 
 server.use(express.json());

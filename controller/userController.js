@@ -84,11 +84,10 @@ const createUser = async(req,res)=>{
       const newuserData = await userModel.findById(newUser._id).populate({path:"recommendedChapter", select:"-level"})
 
       // SEDING RESPONSE
+   res.cookie('userId', token, {httpOnly:true, secure:false, sameSite:"lax", maxAge:7*24*60*60*1000, path:"/"});
    res.status(200).json({success:true, result:newuserData});
      
    
-   
-  
    }
    catch(err){
      
@@ -336,6 +335,7 @@ const userPassword = async(req,res)=>{
   if(!req.body.currentPassword  || !req.body.newPassword) return res.status(401).json({success:false, message:"currentPassowrd and newPassword is required"})
 
   const userId = jwt.verify(req.cookies.userId, process.env.SECRET_KEY).userId
+
  const {currentPassword, newPassword}  = req.body;
 
  const hashPassword = await bcrypt.hash(newPassword,  10);

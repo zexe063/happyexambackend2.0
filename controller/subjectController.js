@@ -1,6 +1,7 @@
 
 
 
+
 const e = require("express");
 const { classModel } = require("../schema/classSchema");
 const {subjectModel} =  require("../schema/subjectSchema");
