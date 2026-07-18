@@ -200,7 +200,7 @@ const  createLevel  =   async(req,res)=>{
        
     ])
 
-    if(!chapterId || !chapterId.length) return res.json({success:false, message:"class-name || subject-name || chapter-number is invalid"});
+    if(chapterId || !chapterId.length) return res.json({success:false, message:"class-name || subject-name || chapter-number is invalid"});
 
 const data =  req.body.map((item)=>({...item, ["chapterId"]: chapterId[0]?._id, ["chapter_name"]:chapterId[0]?.chapter_name}));
 
@@ -220,8 +220,7 @@ res.json({success:true, result:newLevelData})
 
   }
 catch(err){
-  console.log(err)
-  res.status(500).json({esuccess:false, message:"Server Error please try again later"})
+  res.status(500).json({success:false, message:"Server Error please try again later"})
 }
  
     

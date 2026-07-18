@@ -12,6 +12,7 @@ const questionRouter = require("./route/questionRoute");
 const reportQuestionRouter = require("./route/reportQuestionRoute");
 const courseRouter = require("./route/courseRoute")
 const userRouter = require("./route/userRoute")
+const noteRouter = require("./route/noteRoute");
 const cookieParse = require("cookie-parser");
 const jwt = require("jsonwebtoken");
 const dns = require("dns");
@@ -46,6 +47,7 @@ server.use("/chapter", chapterRouter);
 server.use("/level", levelRouter);
 server.use("/question", questionRouter);
 server.use("/reportquestion", reportQuestionRouter);
+server.use("/notes", noteRouter);
 
  
 
