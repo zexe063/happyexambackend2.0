@@ -24,15 +24,14 @@ const getUser = async(req,res)=>{
 
      delete user._doc.password;
    //  NOW AFTER USER GET DATA
-   const token = jwt.sign({userId:user._id}, process.env.SECRET_KEY);
+   const token = jwt.sign({userId:user._id}, process.env.SECRET_KEY, {expiresIn:"30d"});
    
-   res.cookie('userId', token, {httpOnly:true, secure:false, sameSite:"lax", maxAge:7*24*60*60*1000, path:"/"});
+   res.cookie('userId', token, {httpOnly:true, secure:false, sameSite:"lax", maxAge:30*24*60*60*1000, path:"/"});
     res.status(200).json({success:true, result:user});
 
  
  }
  catch(err){
-   console.log(err)
    res.status(500).json({
       success:false,
       message:"Server Error. please try again later",
@@ -77,14 +76,14 @@ const createUser = async(req,res)=>{
     const newUser = await new userModel(UserRegistrationData);
     if(!newUser) return res.status(401).json({success:false, message:"Something went wrong"});   
 
-       const token = jwt.sign({userId:newUser._id}, process.env.SECRET_KEY);
+       const token = jwt.sign({userId:newUser._id}, process.env.SECRET_KEY, {expiresIn:'30d'});
          await newUser.save()
 
       // POPULATE RECCOMENDED CHAPTER
       const newuserData = await userModel.findById(newUser._id).populate({path:"recommendedChapter", select:"-level"})
 
       // SEDING RESPONSE
-   res.cookie('userId', token, {httpOnly:true, secure:false, sameSite:"lax", maxAge:7*24*60*60*1000, path:"/"});
+   res.cookie('userId', token, {httpOnly:true, secure:false, sameSite:"lax", maxAge:30*24*60*60*1000, path:"/"});
    res.status(200).json({success:true, result:newuserData});
      
    
