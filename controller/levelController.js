@@ -227,4 +227,10 @@ catch(err){
     
 }
 
+// UPDATE LEVEL:
+
+ const updateLevel = async(req,res)=>{
+   const updatedLevelData= await levelModel.bulkWrite(operations)
+}
+
 module.exports = {getLevel,createLevel};

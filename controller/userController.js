@@ -266,15 +266,7 @@ try{
        
          break;
 
-         
-         case 'SUBSCRIPTION':
-             const userSubscriptionData = await userModel.findByIdAndUpdate(userId,{$set:{isPremium:true}}, {new:true, runValidators:true}).select({isPremium:1})
-
-             if(!userSubscriptionData) return res.status(404).json({action:"SUBSCRIPTION", success:true, message:"Something went wrong"})
-             res.status(200).json({action:"SUBSCRIPTION",result:userSubscriptionData})
-
-            break;
-
+   
         default:
       res.status(401).json({success:false, message:"Unknown event Update case"})
 
@@ -286,6 +278,50 @@ catch(err){
  if(err.name ==="JsonWebTokenError") return res.status(401).json({success:"false", message:"User token verify failed"})
 res.status(501).json({success:false, message:"Server Error: please try again later"})
 }
+}
+
+// REVENUECAT PAYMENT
+
+const revenueCatPayment = async(req,res)=>{
+try{
+ const {event} = req.body;
+
+  const userId = event.app_user_id;
+  const eventType  = event.type;
+  const premium_expires_at = new Date(event.expiration_at_ms);
+
+ switch(eventType){
+    case "INITIAL_PURCHASE":
+   case "RENEWAL":
+   await userModel.findByIdAndUpdate(userId, {$set:{isPremium:true, premium_expires_at: premium_expires_at}});
+ break;
+
+  case "CANCELLATION":
+    if(event.cancel_reason === "CUSTOMER_SUPPPORT"){
+  await userModel.findByIdAndUpdate(userId, {$set:{isPremium:false}});
+    } 
+
+  case "EXPIRATION":
+    await userModel.findByIdAndUpdate(userId, {$set:{isPremium:false}});
+    break;
+
+     default:
+       console.log("unhandle event type");
+ }
+
+   return res.status(200).json({success:true})
+}
+
+
+ catch(err){
+
+   res.status(500).json({
+        success:false,
+        message:"Server Error. please try again later"
+      })
+ }
+
+
 }
 
 // USER PROFILE UPDATE
@@ -382,6 +418,6 @@ const  deleteUser = async(req,res)=>{
   } 
 }
 
-module.exports = {getUser, verifyUser, createUser,progressEvent, userProfile, userPassword, deleteUser}
+module.exports = {getUser, verifyUser, createUser,progressEvent, revenueCatPayment,userProfile, userPassword, deleteUser}
 
 

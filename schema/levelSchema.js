@@ -21,8 +21,17 @@ const  levelSchema =  new mongoose.Schema({
         type:Number,
         required:true,
     },
-  
-        
+    level_title:{
+      english:{
+        type:String,
+         required:true
+      },
+       hindi:{
+        type:String,
+        required:true
+       }
+    },
+    
     question:[{
    type:mongoose.Schema.Types.ObjectId,
    ref:"question"

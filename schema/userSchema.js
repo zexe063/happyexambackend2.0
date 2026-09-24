@@ -98,6 +98,10 @@ required:true
     isPremium:{
         type:Boolean,
         required:true
+    },
+    premium_expires_at:{
+       type:Date,
+       default:null
     }
 
     
